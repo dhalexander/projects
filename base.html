@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <link rel="stylesheet" href="styles.css">
+    <title>Reely Video Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <script src="myscripts.js"></script>
+
+    <!-- <form> -->
+<div class="videoUpload">
+    <div class="uploadBody">
+        <h1>Upload Your Videos Here!</h1>
+        <panel class="uploadVideo">
+          <input value="test" title=" " type="file" id="videoUpload" name="videoUpload" class="videoUpload" accept="video/mp4,video/x-m4v,video/*" onchange="javascript:updateList()" style="color: #1a4851;" >
+        </panel>
+
+        <div id="divUpload">
+          <h1>Accumulated Video Length</h1>
+          <container id="infosContainer">
+            <p class="infos" id="infos" hidden ></p>
+            <p class="infosShow" id="infosShow" >0 Seconds</p>
+          </container>
+            <ul style="color: #1a4851;">
+              <li>
+                The first 10 minutes are included with purchase.
+              </li>
+              <li>
+                $0.06 will be applied with each second beyond 10 minutes.
+              </li>
+              <li>
+                Maximum length of 60 minutes.
+              </li>
+              <li>
+                After a video is removed, time and price updates will occur after a subsequent video is uploaded.
+              </li>
+            </ul>
+            <h1>Total Price</h2>
+            <p class="price" id="price">$39.99</p>
+            <br>
+            <button type="submit" value="Confirm Videos" class="submit">Confirm Videos</button>
+        </div>
+      </div>
+        <h1 style="text-align: left; margin-left: 20px;" >Selected Videos:</h1>
+    <div class="container">
+      <panel id="videoPanel" class="videoPanel"></panel>
+    </div>
+</div>
+<!-- </form> -->
+
+
+
+<script>
+
+  //video length
+  var myVideos = [];
+  
+  window.URL = window.URL || window.webkitURL;
+  
+  document.getElementById('videoUpload').onchange = setFileInfo;
+  
+  function setFileInfo() {
+    var button = document.createElement("button")
+
+    var files = this.files;
+    myVideos.push(files[0]);
+    var video = document.createElement('video');
+    video.preload = 'metadata';
+
+    var newDiv = document.createElement("div")
+    newDiv.classList.add("videoDiv")
+    newDiv.setAttribute('name', 'newDiv')
+    newDiv.setAttribute('id', 'newDiv')
+
+    newDiv.appendChild(video);
+    newDiv.appendChild(button)
+    videoPanel.appendChild(newDiv);
+    // newDiv.appendChild(video)
+    const file = document.getElementById('videoUpload').files[0];
+    // filelist.textContent += file;
+  
+    video.onloadedmetadata = function() {
+      window.URL.revokeObjectURL(video.src);
+      var duration = video.duration;
+      myVideos[myVideos.length - 1].duration = duration;
+      updateInfos();
+    }
+  
+    video.setAttribute('accept', 'video/mp4,video/x-m4v,video/*')
+    video.setAttribute('preload', 'metadata')
+    video.setAttribute('id', 'video')
+    video.classList.add('videoDisplay'); //adds class
+    video.width = 280;
+    video.height = 240;
+    video.controls = true;
+    video.src = URL.createObjectURL(files[0]);;
+
+    button.setAttribute('value', 'test');
+    button.setAttribute('id', 'btn');
+    button.setAttribute("onclick", "this.parentElement.style.display = 'none'; infos.textContent = infos.textContent - this.closest('#newDiv').querySelector('.videoDisplay').duration ; ")
+    button.classList.add('btn'); //adds class
+    button.textContent = "X";
+
+  }
+  
+  function updateInfos() {
+    var infos = document.getElementById('infos');
+    if (infos.textContent) {
+      var prevInfos = infos.textContent;
+      infos.textContent = "";
+    } else {
+      var prevInfos = 0;
+    }
+    for (var i = 0; i < myVideos.length; i++) {
+      infos.textContent = parseFloat(myVideos[i].duration) + parseFloat(prevInfos);
+
+      var time = parseFloat(infos.textContent)
+      var minutes = Math.floor(time / 60);
+      var seconds = time - minutes * 60;
+      var secondsRound = Math.round(seconds);
+      
+      if (minutes < 1) {
+        minutes = "";
+      } else if (minutes === 1) {
+        minutes += " minute "
+      } else {
+        minutes += " minutes "
+      }
+
+      if (secondsRound < 1) {
+        secondsRound = "";
+      } else if (secondsRound === 1) {
+        secondsRound += " second"
+      } else {
+        secondsRound += " seconds"
+      }
+
+      infosShow.textContent =  minutes + secondsRound;
+
+      //price
+      var sec = parseFloat(infos.textContent);
+      if (sec > 600) {
+        var remSec = sec - 10;
+        var remSecRound = Math.round(remSec);
+        var additionalPrice = remSecRound * 0.06;
+        var newPrice = 39.99 + additionalPrice;
+        var newPrice = Math.round(newPrice * 100) / 100
+        const element = document.getElementById("price");
+        element.innerHTML = "$" + newPrice;
+      }
+      //max time
+      if (sec > 3600) {
+        const element = document.getElementById("videoUploadLabel");
+        element.innerHTML = "60 minute limit exceeded. Please remove clips until accumulated time (seen below) is within 60 minutes."
+        document.getElementById("videoUpload").style.display = "none";
+      }
+
+    }
+  }
+  function btnFunction(exampleElement) {
+    exampleElement.style.display = "none";
+}
+  
+</script>
+
+
+</body>
+</html>
